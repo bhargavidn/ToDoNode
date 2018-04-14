@@ -2,6 +2,7 @@ const {mongoose}=require("./db/mongoose");
 const express=require("express");
 const bodyParser=require("body-parser");
 const {ObjectID}=require("mongodb");
+const _=require('lodash');
 
 const {toDo}=require("./models/todo");
 const {User}=require("./models/user");
@@ -57,6 +58,28 @@ app.delete("/todos/:id",(req,res)=>{
     }
     res.send({result})
   }).catch((e)=>res.status(400).send({}))
+});
+
+app.patch("/todos/:id",(req,res)=>{
+  var id=req.params.id;
+
+  if(!ObjectID.isValid(id)){
+    return res.status(404).send();
+  }
+  const body=_.pick(req.body,["text","completed"]);
+  if(_.isBoolean(body.completed)&& body.completed){
+    body.completedAt= new Date().getTime();
+  }
+  else{
+    body.completedAt=null;
+    body.completed=false;
+  }
+  toDo.findByIdAndUpdate(id,{$set: body},{new:true}).then((todo)=>{
+    if(!todo){
+      return res.status(404).send();
+    }
+    return res.send({todo})
+  }).catch((e)=>res.status(400).send());
 });
 
 app.listen(port,()=>{
