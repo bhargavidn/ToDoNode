@@ -11,7 +11,9 @@ const Todos=[{
   text:"Eating"
 },{
   _id:new ObjectID(),
-  text:"Studying"
+  text:"Studying",
+  completed:true,
+  completedAt:23222
 }];
 beforeEach((done)=>{
   toDo.remove({}).then(()=>{
@@ -62,14 +64,14 @@ describe("POST /todos",()=>{
 });
 
 describe("GET /todos",function(){
-  this.timeout(5000);
+
   it("should return todos",(done)=>{
     request('app')
       .get("/todos")
       .expect(200)
-      .then((res)=>{
+      .expect((res)=>{
         expect(res.body.docs.length).toBe(2);
-      }).catch((e)=>done(e));
+      }).end(done);
   });
 })
 describe("GET /todos/id",function(){
@@ -78,8 +80,10 @@ describe("GET /todos/id",function(){
       .get(`/todos/${Todos[0]._id.toHexString()}`)
       .expect(200)
       .expect((res)=>{
-        expect(res.body.doc.text).toBe(Todos[0].text);
-      }).end(done);
+        expect(res.body.todo.text).toBe(Todos[0].text);
+        //console.log("result is "+(res.body.todo.text,undefined,2));
+      })
+      .end(done);
   });
 
   it("should return 404 of todo not found",(done)=>{
@@ -129,3 +133,45 @@ describe("DELETE /todos/id",()=>{
       .end(done)
   })
 });
+describe("PATCH/todo",()=>{
+  it("should update the todo",(done)=>{
+    //grab id of first todo, update text and set completed to true
+    //expect the status 200, text received is same as send and completedAt is a number
+    var id=Todos[0]._id.toHexString();
+    var text="some dummy text";
+    request(app)
+      .patch(`/todos/${id}`)
+      .send({
+        text,
+        completed:true
+      })
+      .expect(200)
+      .expect((res)=>{
+        expect(res.body.todo.text).toBe(text);
+        expect(res.body.todo.completed).toBe(true);
+        expect(typeof res.body.todo.completedAt).toBe('number');
+
+      })
+      .end(done)
+  });
+  it("should clear completedAt when todo is completed",(done)=>{
+    //grab id of second todo item
+    //update text, completed as false
+    //200, text is updated, completed is false and completedAt is null
+    var id=Todos[1]._id.toHexString();
+    var text="crafting";
+    request(app)
+      .patch(`/todos/${id}`)
+      .send({
+        text,
+        completed:false
+      })
+      .expect(200)
+      .expect((res)=>{
+        expect(res.body.todo.text).toBe(text);
+        expect(res.body.todo.completed).toBe(false);
+        expect(res.body.todo.completedAt).toBe(null);
+      })
+      .end(done);
+  })
+})
