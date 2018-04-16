@@ -3,6 +3,7 @@ const express=require("express");
 const bodyParser=require("body-parser");
 const {ObjectID}=require("mongodb");
 const _=require('lodash');
+const {authenticate}=require("./middleware/authenticate");
 
 const {toDo}=require("./models/todo");
 const {User}=require("./models/user");
@@ -98,4 +99,9 @@ app.listen(port,()=>{
   console.log(`Server started on ${port}`);
 });
 
+
+
+app.get("/users/me",authenticate,(req,res)=>{
+  res.send(req.user);
+});
 module.exports={app}
