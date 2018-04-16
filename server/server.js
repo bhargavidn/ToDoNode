@@ -53,7 +53,6 @@ app.delete("/todos/:id",(req,res)=>{
     return res.status(404).send();
   }
   toDo.findByIdAndRemove(id).then((result)=>{
-    console.log("result from remove ",result);
     if(!result){
       return res.status(404).send();
     }
@@ -103,5 +102,17 @@ app.listen(port,()=>{
 
 app.get("/users/me",authenticate,(req,res)=>{
   res.send(req.user);
+});
+
+//login route
+app.post("/users/login",(req,res)=>{
+  var body=_.pick(req.body,["email","password"]);
+  User.findByCredentials(body.email,body.password).then((user)=>{
+    return user.generateAuthToken().then((token)=>{
+      res.header("x-auth",token).send({user});
+    });
+  }).catch((e)=>{
+    res.status(400).send();
+  });
 });
 module.exports={app}
