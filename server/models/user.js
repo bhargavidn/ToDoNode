@@ -79,7 +79,7 @@ UserSchema.pre("save",function(next){
   if(user.isModified('password')){
     bcrypt.genSalt(10,(err,salt)=>{
       bcrypt.hash(user.password,salt,(err,hash)=>{
-        
+
         user.password=hash;
         next();
       })
@@ -108,6 +108,16 @@ UserSchema.statics.findByCredentials=function(email,password){
       })
     });
 
+  });
+}
+UserSchema.methods.removeToken=function(token){
+  var user=this;
+  return user.update({
+    $pull:{
+      tokens:{
+        token
+      }
+    }
   });
 }
 var User= mongoose.model('User',UserSchema);

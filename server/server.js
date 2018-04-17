@@ -115,4 +115,14 @@ app.post("/users/login",(req,res)=>{
     res.status(400).send();
   });
 });
+
+//logout route
+app.delete("/users/me/token",authenticate,(req,res)=>{
+  //call removetoken method
+  req.user.removeToken(req.token).then(()=>{
+    res.send();
+  },()=>{
+    res.status(400).send();
+  })
+});
 module.exports={app}
